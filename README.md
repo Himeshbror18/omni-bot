@@ -130,6 +130,41 @@ Possible upgrades:
 
 Some upgrades require additional hardware. Sadly, software cannot manufacture an IMU out of optimism.
 
+## 🐍 Python Control Center
+
+The **Python companion lives inside this repository** and is designed to work alongside the ESP32 firmware.
+
+The ESP32 remains the low-level motor controller; Python is the higher-level desktop control and diagnostics layer.
+
+### Current Python foundation
+
+- 🎮 Keyboard control
+- 📡 Wi-Fi HTTP communication with the ESP32
+- 🧮 Mecanum wheel-mixing module matching the firmware
+- 🔧 Individual motor commands
+- 🛑 Explicit stop command
+- 📦 Installable Python package structure
+- 🧪 Ready for GUI, gamepad, telemetry and simulation
+
+### Quick start
+
+```bash
+cd python
+python -m venv .venv
+
+# Windows
+.venv\Scripts\activate
+
+# Linux/macOS
+source .venv/bin/activate
+
+pip install -r requirements.txt
+python -m omnibot
+```
+
+> If the computer disappears from Wi-Fi, the controller is designed around explicit stop handling rather than assuming silence means “keep driving.” Because apparently robots need boundaries too.
+
+See [`python/README.md`](python/README.md) for the Python architecture.
 ## 💻 Firmware
 ```text
 firmware/
@@ -166,6 +201,16 @@ Robotics debugging is mostly measurement, documentation, and occasionally starin
 ```text
 omni-bot/
 ├── README.md
+├── python/
+│   ├── README.md
+│   ├── pyproject.toml
+│   ├── requirements.txt
+│   └── omnibot/
+│       ├── __init__.py
+│       ├── __main__.py
+│       ├── controller.py
+│       ├── mecanum.py
+│       └── protocol.py
 ├── docs/
 │   ├── motor-positioning.md
 │   ├── wiring.md
