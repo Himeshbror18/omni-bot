@@ -1,0 +1,20 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "omnibot-control"
+version = "0.1.0"
+description = "Python desktop controller and diagnostics tools for the Omni-Bot ESP32 robot."
+requires-python = ">=3.10"
+dependencies = [
+    "requests>=2.32,<3",
+    "pygame>=2.6,<3",
+]
+
+[project.scripts]
+omnibot = "omnibot.__main__:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["omnibot*"]
