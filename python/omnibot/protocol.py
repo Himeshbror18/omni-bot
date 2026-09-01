@@ -1,4 +1,9 @@
-"""HTTP transport for the current ESP32 controller."""
+"""HTTP transport for the current Omni-Bot ESP32 firmware.
+
+The endpoint names and parameters mirror firmware/src/main.cpp:
+    /move?c=<command>&v=<0..100>
+    /motor?i=<0..3>&v=<-100..100>
+""" 
 
 from dataclasses import dataclass
 import requests
@@ -21,6 +26,7 @@ class RobotClient:
         self._get("/move", c=command, v=speed)
 
     def stop(self) -> None:
+        # The ESP32 treats command "s" as stop via its default branch.
         self._get("/move", c="s", v=0)
 
     def motor(self, index: int, value: int) -> None:
@@ -28,3 +34,10 @@ class RobotClient:
             raise ValueError("motor index must be 0..3")
         value = max(-100, min(100, int(value)))
         self._get("/motor", i=index, v=value)
+
+    def close(self) -> None:
+        """Best-effort stop before the client is discarded."""
+        try:
+            self.stop()
+        except requests.RequestException:
+            pass
