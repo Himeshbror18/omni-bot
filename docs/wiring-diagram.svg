@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="760" viewBox="0 0 1200 760">
+<rect width="1200" height="760" fill="#0b1117"/><g font-family="Arial" fill="#e6edf3">
+<text x="600" y="48" text-anchor="middle" font-size="30" font-weight="bold">OMNI-BOT • D1 R32 + 2× TB6612FNG</text>
+<text x="600" y="78" text-anchor="middle" font-size="16" fill="#8b949e">Detailed wiring overview • verify your exact breakout labels before powering</text>
+<rect x="55" y="120" width="300" height="260" rx="14" fill="#111820" stroke="#30363d" stroke-width="2"/>
+<text x="205" y="155" text-anchor="middle" font-size="22" font-weight="bold">WeMos D1 R32</text>
+<text x="80" y="195" font-size="17">GPIO13 → FL PWM</text><text x="80" y="222" font-size="17">GPIO18/19 → FL IN1/IN2</text>
+<text x="80" y="260" font-size="17">GPIO14 → FR PWM</text><text x="80" y="287" font-size="17">GPIO21/22 → FR IN1/IN2</text>
+<text x="80" y="325" font-size="17">GPIO16/23/25 → RL</text><text x="80" y="352" font-size="17">GPIO17/26/27 → RR</text>
+<rect x="450" y="120" width="300" height="260" rx="14" fill="#111820" stroke="#30363d" stroke-width="2"/>
+<text x="600" y="155" text-anchor="middle" font-size="22" font-weight="bold">TB6612FNG A</text>
+<text x="475" y="205" font-size="17">Channel A → Front Left (FL)</text><text x="475" y="240" font-size="17">Channel B → Front Right (FR)</text>
+<text x="475" y="280" font-size="17">VCC → 3.3V</text><text x="475" y="310" font-size="17">STBY → GPIO32</text><text x="475" y="340" font-size="17">VM → Motor battery +</text>
+<rect x="845" y="120" width="300" height="260" rx="14" fill="#111820" stroke="#30363d" stroke-width="2"/>
+<text x="995" y="155" text-anchor="middle" font-size="22" font-weight="bold">TB6612FNG B</text>
+<text x="870" y="205" font-size="17">Channel A → Rear Left (RL)</text><text x="870" y="240" font-size="17">Channel B → Rear Right (RR)</text>
+<text x="870" y="280" font-size="17">VCC → 3.3V</text><text x="870" y="310" font-size="17">STBY → GPIO33</text><text x="870" y="340" font-size="17">VM → Motor battery +</text>
+<rect x="350" y="470" width="500" height="170" rx="14" fill="#111820" stroke="#30363d" stroke-width="2"/>
+<text x="600" y="510" text-anchor="middle" font-size="22" font-weight="bold">POWER + COMMON GROUND</text>
+<text x="380" y="550" font-size="18">Battery + → VM on both drivers</text><text x="380" y="585" font-size="18">Battery − → GND on both drivers + D1 R32 GND</text><text x="380" y="620" font-size="18">ESP32 → appropriate regulated 5V/USB supply</text>
+<line x1="355" y1="250" x2="450" y2="250" stroke="#58a6ff" stroke-width="3"/><line x1="750" y1="250" x2="845" y2="250" stroke="#58a6ff" stroke-width="3"/>
+<line x1="205" y1="380" x2="205" y2="470" stroke="#58a6ff" stroke-width="3"/>
+<line x1="995" y1="380" x2="995" y2="470" stroke="#58a6ff" stroke-width="3"/>
+<text x="600" y="700" text-anchor="middle" font-size="17" fill="#f85149">⚠ Lift wheels for first test • check motor current, battery voltage and driver ratings</text>
+</g></svg>
