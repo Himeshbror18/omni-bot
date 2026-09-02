@@ -1,106 +1,102 @@
 # 🚗 Omni-Bot
 ### WeMos D1 R32 • ESP32 • 4-Wheel Omni/Mecanum Drive • Wi-Fi Web Control
 
-<p align="center"><strong>A compact, hackable ESP32 robot with browser-based control.</strong><br>No dedicated mobile app — connect to the robot and drive it from your phone.</p>
+<p align="center"><strong>A compact, hackable ESP32 robot with browser-based control.</strong><br>Connect to the robot over Wi-Fi and drive it from a phone or computer.</p>
 
 ![Omni-Bot wiring overview](docs/wiring-diagram.svg)
 
-## ✨ What is Omni-Bot?
-Omni-Bot is a four-wheel omni-directional robot built around the **WeMos D1 R32 (ESP32)**. Two dual-channel **TB6612FNG** motor drivers independently control the four motors, while the ESP32 hosts a lightweight Wi-Fi web interface for driving, speed adjustment, rotation and individual motor testing.
+## ✨ Overview
 
-## 🚨 READ THIS BEFORE CONNECTING POWER
+Omni-Bot is a four-wheel omni/mecanum robot built around one specific controller: the **WeMos D1 R32 (ESP32)**. Two dual-channel **TB6612FNG** motor drivers provide four independent motor channels.
 
-### ⚠️ ESP32 = 3.3 V logic. Do **not** feed 5 V into its GPIO pins.
+The D1 R32 handles Wi-Fi, the web controller, movement commands and the final wheel-speed mix. The Python package provides a higher-level desktop control/diagnostic interface over the same HTTP API.
 
-The WeMos D1 R32 uses an ESP32, whose GPIOs are **not 5 V tolerant**. A motor driver being powered from 5 V does **not automatically** mean its inputs will damage the ESP32; the driver's actual input thresholds and board design matter. The real danger is putting an out-of-spec voltage onto an ESP32 GPIO, including accidentally back-feeding 5 V through a driver board.
+> **Hardware target:** This repository is documented and configured for the **WeMos D1 R32**. Do not substitute a different board without creating and validating a new pin map.
 
-### 🔥 Beware the jumper / regulator trap
+## 🚨 Power and logic warning
 
-Some motor-driver breakout boards have jumpers, solder bridges, or onboard regulators that connect the motor supply and logic supply in ways that are not obvious.
+The WeMos D1 R32 uses an ESP32 with **3.3 V GPIO logic**. Do not apply motor-battery voltage or an unverified 5 V signal to an ESP32 GPIO.
 
-If you externally supply a driver with 5 V and leave the wrong jumper installed, that 5 V may appear on a logic rail or signal path.
+Before powering the robot, verify the exact TB6612FNG breakout-board schematic, `VCC` requirements, motor-supply limits, jumpers/solder bridges and input thresholds. The driver board's `VM` motor supply is separate from its logic `VCC` supply.
 
-**Before powering anything:**
+**Never power the four motors from the D1 R32 3.3 V rail.** Motor current belongs on the motor-supply path through the TB6612FNG drivers.
 
-1. Identify the exact driver-board model.
-2. Read its schematic/datasheet.
-3. Check what **VCC** expects.
-4. Check whether its inputs accept a 3.3 V HIGH.
-5. Check every jumper/solder bridge and what it connects.
-6. Verify that no 5 V rail can reach an ESP32 GPIO.
-7. Make all required grounds common.
-8. Only then connect the motor battery.
+## 🧩 Hardware
 
-> 🔴 **Do not assume a jumper is "just a jumper."** It may be a tiny piece of wire with a very large capacity for ruining your afternoon.
->
-> If the driver really requires 5 V logic, use a proper **3.3 V↔5 V level shifter** instead of hoping the ESP32 develops 5 V tolerance through positive thinking.
-
-## 🧩 Core hardware
 | Part | Role |
 |---|---|
 | **WeMos D1 R32** | Main controller + Wi-Fi |
-| **2× TB6612FNG** | Four independent H-bridge channels |
+| **2× TB6612FNG** | Four H-bridge motor channels |
 | **4× DC gear motors** | Omni/mecanum drive |
-| **Motor battery** | Motor power |
-| **Regulated ESP32 supply** | Logic power |
-
-> ⚠️ **Hardware note:** This repository assumes TB6612FNG breakout boards. Verify the exact board pin labels, motor voltage/current and battery voltage before connecting power.
+| **Motor battery** | Motor power through `VM` |
+| **Regulated controller supply** | Power for the D1 R32 |
 
 ## 🛞 Wheel layout
+
+Viewed from above, front at the top:
+
 ```text
                  FRONT
         ┌─────────────────────┐
-        │   FL           FR   │
-        │    \\           //   │
+        │  FL             FR  │
+        │   ╲             ╱   │
         │                     │
-        │    //           \\   │
-        │   RL           RR   │
+        │   ╱             ╲   │
+        │  RL             RR  │
         └─────────────────────┘
                   REAR
 ```
-FL = Front Left · FR = Front Right · RL = Rear Left · RR = Rear Right
 
-For the common **X-pattern mecanum configuration**, the roller orientation forms an X when viewed from above.
+`FL` = Front Left · `FR` = Front Right · `RL` = Rear Left · `RR` = Rear Right
+
+For the usual X-pattern mecanum layout, the roller directions form an X when viewed from above. Confirm the handedness of the actual wheel set before final assembly.
 
 ## 🎮 Movement model
-X = forward/reverse · Y = lateral strafe · R = rotation
+
+The firmware uses:
 
 ```text
+X = forward (+) / reverse (-)
+Y = right (+) / left (-)
+R = clockwise (+) / counter-clockwise (-)
+
 FL = X - Y - R
 FR = X + Y + R
 RL = X + Y - R
 RR = X - Y + R
 ```
 
-Supported controls: **↑ ↓ ← → · ↖ ↗ ↙ ↘ · ↺ ↻ · STOP**
+The web controller supports forward, reverse, left/right strafe, four diagonals, clockwise/counter-clockwise rotation and STOP.
 
-Individual FL / FR / RL / RR controls are included for commissioning and troubleshooting.
+## 🔌 Wiring and schematics
 
-## 🔌 Wiring & schematics
-### Block schematic
-![Omni-Bot schematic](docs/schematic.svg)
+The detailed wiring reference is now kept in one dedicated document:
 
-### Detailed wiring
-![Omni-Bot detailed wiring](docs/wiring-diagram.svg)
+- **[`docs/SCHEMATICS.md`](docs/SCHEMATICS.md)** — definitive controller, driver, power, signal and wheel-layout reference.
+- **[`docs/wiring.md`](docs/wiring.md)** — concise pin-by-pin wiring checklist.
+- **[`docs/motor-positioning.md`](docs/motor-positioning.md)** — wheel orientation and movement convention.
 
 ### Pin map
+
 | Motor | PWM | IN1 | IN2 | Driver |
 |---|---:|---:|---:|---|
-| FL | GPIO13 | GPIO18 | GPIO19 | A |
-| FR | GPIO14 | GPIO21 | GPIO22 | A |
-| RL | GPIO16 | GPIO23 | GPIO25 | B |
-| RR | GPIO17 | GPIO26 | GPIO27 | B |
+| FL | GPIO13 | GPIO18 | GPIO19 | TB6612FNG A, channel A |
+| FR | GPIO14 | GPIO21 | GPIO22 | TB6612FNG A, channel B |
+| RL | GPIO16 | GPIO23 | GPIO25 | TB6612FNG B, channel A |
+| RR | GPIO17 | GPIO26 | GPIO27 | TB6612FNG B, channel B |
 
-Driver A STBY → GPIO32 · Driver B STBY → GPIO33
+Standby: **Driver A `STBY` → GPIO32**, **Driver B `STBY` → GPIO33**.
 
-TB6612 VCC → 3.3V logic · VM → motor battery · all grounds common.
+Logic: **D1 R32 `3V3` → both driver `VCC`** and **all grounds common**.
+Motor power: battery positive → driver `VM`; battery negative → common ground.
 
-### 🔴 Power warning
+![Omni-Bot schematic](docs/schematic.svg)
 
-> Never power the motors from the ESP32 3.3 V rail. The ESP32 is a controller, not a tiny four-motor power supply pretending to be one.
+![Omni-Bot detailed wiring](docs/wiring-diagram.svg)
 
 ## 🌐 Web controller
-The ESP32 creates its own Wi-Fi access point:
+
+The D1 R32 starts its own Wi-Fi access point:
 
 ```text
 SSID:      Omni-Bot
@@ -108,43 +104,60 @@ Password:  omnibot123
 Address:   http://192.168.4.1
 ```
 
-Features include a direction pad, diagonal movement, rotation, speed control, individual motor testing and stop control.
+The browser controller provides:
 
-## 🧰 Features & upgrade roadmap
+- Direction and diagonal driving
+- Rotation
+- Speed control
+- Individual motor testing
+- Explicit STOP
+- Stop behavior on browser focus/visibility loss
 
-The current firmware provides **Wi-Fi AP mode, a mobile touch controller, directional movement, diagonals, rotation, speed control, individual motor testing, and safety stops when the browser loses focus**.
+Hold a direction button to move. Releasing it sends a stop command.
 
-Possible upgrades:
+## 🧠 Controller architecture
 
-- 🎚️ Joystick-style analog driving
-- 🎯 Per-wheel calibration
-- 🐢 Acceleration/deceleration ramping
-- 🔋 Battery-voltage monitoring and low-battery warnings
-- 📊 Live telemetry
-- 🎮 Bluetooth/gamepad control
-- 📡 Station-mode Wi-Fi
-- 🔐 Configurable Wi-Fi credentials
-- 🧭 IMU-assisted heading control
-- 🛑 Hardware emergency-stop input
-- 🤖 Autonomous movement
+```text
+Phone / Browser
+      │
+      │ HTTP
+      ▼
+WeMos D1 R32 (ESP32)
+      │
+      │ GPIO + PWM
+      ▼
+2 × TB6612FNG
+      │
+      ├── FL
+      ├── FR
+      ├── RL
+      └── RR
+```
 
-Some upgrades require additional hardware. Sadly, software cannot manufacture an IMU out of optimism.
+The ESP32 firmware is the authoritative low-level controller. The Python `Controller` converts keyboard input to the same movement commands used by the web interface.
+
+See **[`python/README.md`](python/README.md)** for the controller/protocol reference.
 
 ## 🐍 Python Control Center
 
-The **Python companion lives inside this repository** and is designed to work alongside the ESP32 firmware.
+The Python companion communicates with the D1 R32 over HTTP:
 
-The ESP32 remains the low-level motor controller; Python is the higher-level desktop control and diagnostics layer.
+```text
+GET /move?c=<command>&v=<0..100>
+GET /motor?i=<0..3>&v=<-100..100>
+```
 
-### Current Python foundation
+Keyboard mapping:
 
-- 🎮 Keyboard control
-- 📡 Wi-Fi HTTP communication with the ESP32
-- 🧮 Mecanum wheel-mixing module matching the firmware
-- 🔧 Individual motor commands
-- 🛑 Explicit stop command
-- 📦 Installable Python package structure
-- 🧪 Ready for GUI, gamepad, telemetry and simulation
+```text
+W → forward          S → reverse
+A → strafe left      D → strafe right
+Q → rotate CCW       E → rotate CW
+U → forward-left     I → forward-right
+J → backward-left    K → backward-right
+```
+
+The four motor indexes are `0=FL`, `1=FR`, `2=RL`, `3=RR`.
 
 ### Quick start
 
@@ -162,10 +175,8 @@ pip install -r requirements.txt
 python -m omnibot
 ```
 
-> If the computer disappears from Wi-Fi, the controller is designed around explicit stop handling rather than assuming silence means “keep driving.” Because apparently robots need boundaries too.
-
-See [`python/README.md`](python/README.md) for the Python architecture.
 ## 💻 Firmware
+
 ```text
 firmware/
 ├── platformio.ini
@@ -173,65 +184,69 @@ firmware/
     └── main.cpp
 ```
 
-Build with PlatformIO, upload over USB, connect to the Omni-Bot network and open the controller address.
+PlatformIO is configured for the **WeMos D1 R32**. Build/upload with PlatformIO, power the robot safely, connect to the `Omni-Bot` access point and open `http://192.168.4.1`.
 
-### First power-up
+## 🧪 First power-up / commissioning
+
 1. Lift all wheels off the ground.
-2. Power the controller and drivers.
-3. Connect to the web interface.
-4. Test every motor individually at low speed.
-5. Verify physical direction and adjust inversion flags if necessary.
-6. Test combined movement before placing the robot on the floor.
+2. Check the wiring against [`docs/SCHEMATICS.md`](docs/SCHEMATICS.md).
+3. Power the D1 R32 and drivers with the correct supplies.
+4. Connect to the `Omni-Bot` Wi-Fi network.
+5. Test FL, FR, RL and RR individually at low speed.
+6. Verify each wheel's physical direction.
+7. Correct motor polarity or firmware inversion only after checking the wiring.
+8. Test forward/reverse, then strafe and rotation.
+9. Test combined motion with the wheels still lifted.
+10. Only then run the robot on the floor.
 
 ## 🧯 Common failure modes
 
 | Symptom | Likely cause |
 |---|---|
-| ESP32 resets when motors start | Supply sag, noise, or poor power arrangement |
-| One motor runs backwards | Motor polarity or inversion setting |
-| Robot refuses to strafe correctly | Wheel orientation, inversion, or mixer issue |
-| Driver gets very hot | Motor current/load exceeds the driver's practical limit |
-| ESP32 gets hot | 🚨 Stop powering it and investigate immediately |
-| Wi-Fi works but motors don't | Driver power, STBY, or wiring problem |
-| ESP32 dies after connecting a driver | 🚨 Possible overvoltage/back-feed — inspect the wiring |
+| D1 R32 resets when motors start | Supply sag, noise, grounding or regulator problem |
+| One wheel runs backwards | Motor polarity or inversion setting |
+| Strafing is wrong | Wheel orientation, wiring, inversion or mixer issue |
+| Driver gets very hot | Motor current/load exceeds practical driver limits |
+| Wi-Fi works but motors do not | Driver power, `STBY`, wiring or logic-supply issue |
+| Controller is damaged after driver connection | Possible overvoltage/back-feed; stop and inspect immediately |
 
-Robotics debugging is mostly measurement, documentation, and occasionally staring at a wire while asking what it did to deserve this.
+For electrical problems, measure voltage and continuity instead of guessing from symptoms.
 
 ## 📁 Repository
+
 ```text
 omni-bot/
 ├── README.md
-├── python/
-│   ├── README.md
-│   ├── pyproject.toml
-│   ├── requirements.txt
-│   └── omnibot/
-│       ├── __init__.py
-│       ├── __main__.py
-│       ├── controller.py
-│       ├── mecanum.py
-│       └── protocol.py
 ├── docs/
+│   ├── SCHEMATICS.md
 │   ├── motor-positioning.md
 │   ├── wiring.md
 │   ├── schematic.svg
 │   └── wiring-diagram.svg
-└── firmware/
-    ├── platformio.ini
-    └── src/
-        └── main.cpp
+├── firmware/
+│   ├── platformio.ini
+│   └── src/
+│       └── main.cpp
+└── python/
+    ├── README.md
+    ├── pyproject.toml
+    ├── requirements.txt
+    └── omnibot/
+        ├── __init__.py
+        ├── __main__.py
+        ├── controller.py
+        ├── mecanum.py
+        └── protocol.py
 ```
 
 ## ☕ Support
+
 If this project helps you build something cool, you can support my work on **Ko-fi**.
 
 <p align="center"><a href="https://ko-fi.com/himanshu18"><img src="https://img.shields.io/badge/Support%20me%20on-Ko--fi-ff5e5b?style=for-the-badge&logo=ko-fi&logoColor=white" alt="Support on Ko-fi"></a></p>
 
-This is the same Ko-fi linked from my **Cursed Archive** project.
-
 ## 📜 License
-Released under the **MIT License**.
 
-In short: you can use, modify, redistribute and build your own projects from this code, while keeping the license/copyright notice. The license does not magically protect your hardware from 5 V mistakes.
+Released under the **MIT License**.
 
 <p align="center"><sub>Made with ❤️ by Himeshbror18</sub></p>
