@@ -4,42 +4,58 @@ from .protocol import RobotClient
 
 
 class Controller:
-    """Translate human-friendly keyboard input into robot movement commands.
+    """Translate keyboard input into safe robot movement commands.
 
     The ESP32 firmware remains responsible for wheel mixing and motor output.
-    This class only chooses the firmware movement command and speed.
+    This class tracks movement-key state so unrelated keyboard events do not
+    accidentally stop the robot.
     """
 
-    # Matches /move?c=<command> in firmware/src/main.cpp.
     COMMANDS = {
-        "w": "f",      # forward
-        "s": "b",      # reverse
-        "a": "l",      # strafe left
-        "d": "r",      # strafe right
-        "q": "ccw",    # rotate counter-clockwise
-        "e": "cw",     # rotate clockwise
-        "u": "fl",     # forward-left diagonal
-        "i": "fr",     # forward-right diagonal
-        "j": "bl",     # backward-left diagonal
-        "k": "br",     # backward-right diagonal
+        "w": "f", "s": "b", "a": "l", "d": "r",
+        "q": "ccw", "e": "cw",
+        "u": "fl", "i": "fr", "j": "bl", "k": "br",
     }
 
     def __init__(self, client: RobotClient | None = None, speed: int = 70):
         self.client = client or RobotClient()
         self.speed = max(0, min(100, int(speed)))
+        self._pressed: set[str] = set()
+        self._active_key: str | None = None
 
     def set_speed(self, speed: int) -> None:
         """Set movement speed as a percentage from 0 to 100."""
         self.speed = max(0, min(100, int(speed)))
 
+    def key_down(self, key: str) -> None:
+        """Start movement for a mapped key; ignore unrelated keys."""
+        key = key.lower()
+        if key not in self.COMMANDS:
+            return
+        self._pressed.add(key)
+        self._active_key = key
+        self.client.move(self.COMMANDS[key], self.speed)
+
+    def key_up(self, key: str) -> None:
+        """Stop when the active movement key is released."""
+        key = key.lower()
+        self._pressed.discard(key)
+        if key == self._active_key:
+            self._active_key = next(iter(self._pressed), None)
+            if self._active_key is None:
+                self.client.stop()
+            else:
+                self.client.move(self.COMMANDS[self._active_key], self.speed)
+
     def command(self, key: str) -> None:
-        """Send a mapped movement command; stop for an unmapped key."""
-        command = self.COMMANDS.get(key.lower())
-        if command:
-            self.client.move(command, self.speed)
-        else:
-            self.client.stop()
+        """Backward-compatible one-shot command interface."""
+        key = key.lower()
+        if key in self.COMMANDS:
+            self.key_down(key)
+            self.key_up(key)
 
     def stop(self) -> None:
-        """Request an explicit robot stop."""
+        """Explicitly stop the robot and clear local movement state."""
+        self._pressed.clear()
+        self._active_key = None
         self.client.stop()
