@@ -1,4 +1,4 @@
-# 🚗 Omni-Bot
+# 🤖 Omni-Bot
 ### WeMos D1 R32 • ESP32 • 4-Wheel Omni/Mecanum Drive • Wi-Fi Web Control
 
 <p align="center"><strong>A compact, hackable ESP32 robot with browser-based control.</strong><br>Connect to the robot over Wi-Fi and drive it from a phone or computer.</p>
@@ -11,7 +11,7 @@ Omni-Bot is a four-wheel omni/mecanum robot built around one specific controller
 
 The D1 R32 handles Wi-Fi, the web controller, movement commands and the final wheel-speed mix. The Python package provides a higher-level desktop control/diagnostic interface over the same HTTP API.
 
-> **Hardware target:** This repository is documented and configured for the **WeMos D1 R32**. Do not substitute a different board without creating and validating a new pin map.
+> **Hardware target:** This repository is documented and configured for the **WeMos D1 R32**. Do not substitute a different board without creating and validating a new pin map. The robot has enough variables already.
 
 ## 🚨 Power and logic warning
 
@@ -19,7 +19,7 @@ The WeMos D1 R32 uses an ESP32 with **3.3 V GPIO logic**. Do not apply motor-bat
 
 Before powering the robot, verify the exact TB6612FNG breakout-board schematic, `VCC` requirements, motor-supply limits, jumpers/solder bridges and input thresholds. The driver board's `VM` motor supply is separate from its logic `VCC` supply.
 
-**Never power the four motors from the D1 R32 3.3 V rail.** Motor current belongs on the motor-supply path through the TB6612FNG drivers.
+**Never power the four motors from the D1 R32 3.3 V rail.** Motor current belongs on the motor-supply path through the TB6612FNG drivers. The ESP32 is a controller, not a four-motor power bank with Wi-Fi.
 
 ## 🧩 Hardware
 
@@ -49,7 +49,7 @@ Viewed from above, front at the top:
 
 `FL` = Front Left · `FR` = Front Right · `RL` = Rear Left · `RR` = Rear Right
 
-For the usual X-pattern mecanum layout, the roller directions form an X when viewed from above. Confirm the handedness of the actual wheel set before final assembly.
+For the usual X-pattern mecanum layout, the roller directions form an X when viewed from above. Confirm the handedness of the actual wheel set before final assembly. Four wheels spinning confidently in the wrong arrangement is still wrong.
 
 ## 🎮 Movement model
 
@@ -70,7 +70,7 @@ The web controller supports forward, reverse, left/right strafe, four diagonals,
 
 ## 🔌 Wiring and schematics
 
-The detailed wiring reference is now kept in one dedicated document:
+The detailed wiring reference is kept in one dedicated document:
 
 - **[`docs/SCHEMATICS.md`](docs/SCHEMATICS.md)** — definitive controller, driver, power, signal and wheel-layout reference.
 - **[`docs/wiring.md`](docs/wiring.md)** — concise pin-by-pin wiring checklist.
@@ -87,7 +87,7 @@ The detailed wiring reference is now kept in one dedicated document:
 
 Standby: **Driver A `STBY` → GPIO32**, **Driver B `STBY` → GPIO33**.
 
-Logic: **D1 R32 `3V3` → both driver `VCC`** and **all grounds common**.
+Logic: **D1 R32 `3V3` → both driver `VCC`** and **all grounds common**.  
 Motor power: battery positive → driver `VM`; battery negative → common ground.
 
 ![Omni-Bot schematic](docs/schematic.svg)
@@ -113,7 +113,7 @@ The browser controller provides:
 - Explicit STOP
 - Stop behavior on browser focus/visibility loss
 
-Hold a direction button to move. Releasing it sends a stop command.
+Hold a direction button to move. Releasing it sends a stop command. Because asking the robot to keep driving after you let go seemed like a poor default.
 
 ## 🧠 Controller architecture
 
@@ -166,7 +166,7 @@ cd python
 python -m venv .venv
 
 # Windows
-.venv\Scripts\activate
+.venv\\Scripts\\activate
 
 # Linux/macOS
 source .venv/bin/activate
@@ -199,6 +199,8 @@ PlatformIO is configured for the **WeMos D1 R32**. Build/upload with PlatformIO,
 9. Test combined motion with the wheels still lifted.
 10. Only then run the robot on the floor.
 
+The floor is a much less forgiving debugging environment.
+
 ## 🧯 Common failure modes
 
 | Symptom | Likely cause |
@@ -210,7 +212,7 @@ PlatformIO is configured for the **WeMos D1 R32**. Build/upload with PlatformIO,
 | Wi-Fi works but motors do not | Driver power, `STBY`, wiring or logic-supply issue |
 | Controller is damaged after driver connection | Possible overvoltage/back-feed; stop and inspect immediately |
 
-For electrical problems, measure voltage and continuity instead of guessing from symptoms.
+For electrical problems, measure voltage and continuity instead of guessing from symptoms. Multimeters remain annoyingly useful.
 
 ## 📁 Repository
 
