@@ -251,4 +251,4 @@ If this project helps you build something cool, you can support my work on **Ko-
 
 Released under the **MIT License**.
 
-<p align="center"><sub>Made with ❤️ by Himeshbror18</sub></p>
+<p align="center"><sub>Made with ❤️ by <strong>HB (Himesh Bror)</strong></sub></p>
